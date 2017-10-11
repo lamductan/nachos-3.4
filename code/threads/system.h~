@@ -49,7 +49,4 @@ extern SynchDisk   *synchDisk;
 extern PostOffice* postOffice;
 #endif
 
-char* User2System(int virtAddr, int limit);
-int System2User(int virtAddr, int len, char* buffer);
-
 #endif // SYSTEM_H
