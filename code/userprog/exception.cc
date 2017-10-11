@@ -76,7 +76,8 @@ ExceptionHandler(ExceptionType which)
              int result;
              result = op1 - op2;
              machine->WriteRegister(2, result);
-             //interrupt->Halt(); 
+             break;
+             return;
            }
            case SC_Create:
            {
@@ -88,7 +89,7 @@ ExceptionHandler(ExceptionType which)
              virtAddr = machine->ReadRegister(4);
              DEBUG ('a',"\n Reading filename.");
              // MaxFileLength là = 32
-             filename = User2System(virtAddr,MaxFileLength+1);
+             filename = machine->User2System(virtAddr,MaxFileLength+1);
              if (filename == NULL)
              {
                printf("\n Not enough memory in system");
@@ -97,29 +98,24 @@ ExceptionHandler(ExceptionType which)
                // trình người dùng
 
                delete filename;
+               break;
                return;
              }
             DEBUG('a',"\n Finish reading filename.");
-             //DEBUG('a',"\n File name : '"<<filename<<"'");
-             // Create file with size = 0
-             // Dùng đối tượng fileSystem của lớp OpenFile để tạo file,
-             // việc tạo file này là sử dụng các thủ tục tạo file của hệ điều
-             // hành Linux, chúng ta không quản ly trực tiếp các block trên
-             // đĩa cứng cấp phát cho file, việc quản ly các block của file
-             // trên ổ đĩa là một đồ án khác
              if (!fileSystem->Create(filename,0))
              {
                printf("\n Error create file '%s'",filename);
                machine->WriteRegister(2,-1);
                delete filename;
+               break;
                return;
              }
              machine->WriteRegister(2,0); // trả về cho chương trình
              // người dùng thành công
 
              delete filename;
-             return;
              break;
+             return;
            }
            
            case SC_print:
@@ -128,12 +124,13 @@ ExceptionHandler(ExceptionType which)
              char* str;
              // Lấy tham số chuoi từ thanh ghi r4
              virtAddr = machine->ReadRegister(4);
-             str = User2System(virtAddr,1000);
+             str = machine->User2System(virtAddr,1000);
              if (str != NULL)
              {
                printf("%s", str);
                machine->WriteRegister(2,0); // trả về cho chương trình
-             // người dùng thành công
+             // người dùng thành công 
+               break;
                return;
              }
              printf("");
@@ -141,8 +138,8 @@ ExceptionHandler(ExceptionType which)
              // người dùng thành công
 
              delete str;
-             return;
              break;
+             return;
            }
 
            default:
@@ -151,6 +148,7 @@ ExceptionHandler(ExceptionType which)
          }
          machine->registers[PrevPCReg] = machine->registers[PCReg];
          machine->registers[PCReg] = machine->registers[NextPCReg];
-         machine->registers[NextPCReg] += 4;	
+         machine->registers[NextPCReg] += 4;
+         break;	
     }
 }

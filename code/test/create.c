@@ -20,9 +20,10 @@ int main()
     print("failed.~");
   }
   Halt();*/
-  print("Create file\n");
+  int res;
   if (Create("ILoveYPhung.txt") == 0)
   {
+    res = Sub(43, 23);
     print("\Create file ~");
     //print(filename);
     print("success.");
