@@ -30,7 +30,9 @@
 #define SC_Fork		9
 #define SC_Yield	10
 
-#define SC_print        11
+#define SC_ReadInt      11
+#define SC_PrintInt     12
+#define SC_print        20
 #define SC_Sub          43
 #ifndef IN_ASM
 
@@ -129,6 +131,12 @@ void Yield();
 void print(char* str);
 
 int Sub(int a, int b);
+
+/* Read an integer from console */
+int ReadInt();
+
+/* Write an integer to console */
+void PrintInt(int num);
 
 #endif /* IN_ASM */
 

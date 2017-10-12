@@ -90,13 +90,21 @@ Open:
 	j	$31
 	.end Open
 
-	.globl Read
-	.ent	Read
-Read:
-	addiu $2,$0,SC_Read
+	.globl ReadInt
+	.ent	ReadInt
+ReadInt:
+	addiu $2,$0,SC_ReadInt
 	syscall
 	j	$31
-	.end Read
+	.end ReadInt
+
+	.globl PrintInt
+	.ent	PrintInt
+PrintInt:
+	addiu $2,$0,SC_PrintInt
+	syscall
+	j	$31
+	.end PrintInt
 
 	.globl Write
 	.ent	Write
@@ -136,6 +144,7 @@ print:
 	addiu $2,$0,SC_print
 	syscall
 	j	$31
+        .end print
 
         .globl Sub
 	.ent	Sub
