@@ -40,6 +40,10 @@
 #define SC_Sub          43
 #ifndef IN_ASM
 
+#define MAX_INT_LENGTH 1000
+#define MAX_STR_LENGTH 1000
+#define MaxFileLength  100
+
 /* The system call interface.  These are the operations the Nachos
  * kernel needs to support, to be able to run user programs.
  *

@@ -1,0 +1,59 @@
+#include "syscall.h"
+#include "copyright.h"
+
+int main()
+{
+  char i = 0;
+  char* AsciiNames_1[] = { "[NULL]", "[START OF HEADING]", "[START OF TEXT]", "[END OF TEXT]",
+                         "[END OF TRANSMISSION]", "[ENQUIRY]", "[ACKNOWLEDGE]", "[BELL]"};
+  char* AsciiNames_2[] = { "[BACKSAPCE]", "[HORIZONTAL TAB]", "[LINE FEED]", "[VERTICAL TAB]",
+                         "[FORM FEED]", "[CARRIAGE RETURN]", "[SHIFT OUT]", "[SHIFT IN]"};
+  char* AsciiNames_3[] = { "[DATA LINK ESCAPE]", "[DEVICE CONTROL 1]", "[DEVICE CONTROL 2]", "[DEVICE CONTROL 3]",
+                         "[DEVICE CONTROL 4]", "[NEGATIVE ACKNOWLEDGE]", "[SYNCHRONOUS IDLE]", "[ENG OF TRANS. BLOCK]"};
+  char* AsciiNames_4[] = { "[CANCEL]", "[END OF MEDIUM]", "[SUBSTITUTE]", "[ESCAPE]",
+                         "[FILE SEPERATOR]", "[GROUP SEPERATOR]", "[RECORD SEPARATOR]", "[UNIT SEPARATOR]"};
+  PrintString("Decimal\tChar\n");
+  for(; i < 8; i++) {
+     PrintInt(i);
+     PrintChar('\t');
+     
+     PrintString(AsciiNames_1[i]);
+     PrintChar('\n');
+  }
+  for(; i < 16; i++) {
+     PrintInt(i);
+     PrintChar('\t');
+     
+     PrintString(AsciiNames_2[i - 8]);
+     PrintChar('\n');
+  }
+  for(; i < 24; i++) {
+     PrintInt(i);
+     PrintChar('\t');
+     
+     PrintString(AsciiNames_3[i - 16]);
+     PrintChar('\n');
+  }
+  for(; i < 32; i++) {
+     PrintInt(i);
+     PrintChar('\t');
+     
+     PrintString(AsciiNames_4[i - 24]);
+     PrintChar('\n');
+  }
+  PrintInt(i++);
+  PrintChar('\t');
+  PrintString("[SPACE]\n");
+  for(; i < 126; i++) {
+     PrintInt(i);
+     PrintChar('\t');
+     
+     PrintChar(i);
+     PrintChar('\n');
+  }
+  PrintInt(i++);
+  PrintChar('\t');
+  PrintString("[DEL]\n");
+  
+  return 0;    
+}

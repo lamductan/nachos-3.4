@@ -1,0 +1,10 @@
+#include "syscall.h"
+
+int main() {
+  char c[1000];
+  ReadString(c, 1000);
+  PrintString(c);
+  return 0;
+}
+
+
