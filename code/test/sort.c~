@@ -3,7 +3,7 @@
 int
 main()
 {
-    int A[500];	
+    int A[1000];	
     int i, j, tmp, n;
     PrintString("Enter number of integer: ");
     n = ReadInt();

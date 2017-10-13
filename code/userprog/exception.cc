@@ -57,6 +57,24 @@ ExceptionHandler(ExceptionType which)
     {
        case NoException:
          return;
+       case PageFaultException:
+         printf("No valid translation found %d %d\n", which, type);
+         break;
+       case ReadOnlyException:     
+         printf("Write attempted to page marked %d %d\n", which, type);
+         break;
+       case BusErrorException:
+         printf("Translaion resulted in an %d %d\n", which, type);
+         break;
+       case AddressErrorException: 
+         printf("Unaligned reference or one that %d %d\n", which, type);
+         break;
+       case OverflowException:
+         printf("Integer overflow %d %d\n", which, type);
+         break;
+       case IllegalInstrException:
+         printf("Unimplemented or reserved instr %d %d\n", which, type);
+         break;
        case SyscallException:
          switch (type)
          {
@@ -265,11 +283,7 @@ ExceptionHandler(ExceptionType which)
              machine->WriteRegister(2,0);
              delete str;
              break;
-           } 
-
-           default:
-           printf("\n Unexpected user mode exception (%d %d)", which, type);
-           interrupt->Halt();              
+           }          
          }
          machine->registers[PrevPCReg] = machine->registers[PCReg];
          machine->registers[PCReg] = machine->registers[NextPCReg];
