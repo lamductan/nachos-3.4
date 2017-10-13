@@ -51,6 +51,7 @@
 //----------------------------------------------------------------------
 
 #define MAX_INT_LENGTH 10000
+#define MAX_STR_LENGTH 10000
 
 void
 ExceptionHandler(ExceptionType which)
@@ -214,8 +215,58 @@ ExceptionHandler(ExceptionType which)
              break;
            }
 
+           case SC_ReadChar:
+           {
+             char* buffer = new char[10];
+             int nCharacters = gSynchConsole->Read(buffer, MAX_STR_LENGTH);
+             delete buffer;
+             machine->WriteRegister(2, buffer[0]);
+             break;
+           }
            
+           case SC_PrintChar:
+           {
+             char c = machine->ReadRegister(4);
+             gSynchConsole->Write(c, 1);
+             machine->WriteRegister(2, 0);
+             break;
+           }
 
+           case SC_ReadString:
+           {
+             int virtAddr;
+             char* str;
+             int length;
+             virtAddr = machine->ReadRegister(4);
+             length = machine->ReadRegister(5);
+             int curLength = 0;
+             char* buffer = new char[1];
+             do 
+             {
+               gSynchConsole->Read(buffer, 1);
+               curLength++;
+             } while (buffer[0] != '\n' && curLength < length);
+             str = machine->System2User(virAddr, length);
+             
+             delete buffer;
+             break;
+           }
+
+           case SC_PrintString:
+           {
+             int virtAddr;
+             char* str;
+             virtAddr = machine->ReadRegister(4);
+             str = machine->User2System(virtAddr, MAX_STR_LENGTH);
+             int i = 0;
+             while (str[i])
+             {
+               gSynchConsole->Write(str[i++], 1); 
+             }
+             machine->WriteRegister(2,0);
+             delete str;
+             break;
+           }
 
            default:
            printf("\n Unexpected user mode exception (%d %d)", which, type);
