@@ -3,9 +3,9 @@
 int main() {
   PrintString("Introduce team\n");
   PrintString("In this first project of Operating System course, our team has 3 members. We join together to complete our tasks. Here is the information of 3 member:\n");
-  PrintString("  1. Lam Duc Tan. Student code: 1512489\n");
-  PrintString("  2. Phan Trong Dat. Student code: 1512102\n");
-  PrintString("  3. Truong Thanh Dat: Student code: 1512107.\n");
+  PrintString("  1.Lam Duc Tan. Student code: 1512489\n");
+  PrintString("  2.Phan Trong Dat. Student code: 1512102\n");
+  PrintString("  3.Truong Thanh Dat: Student code: 1512107.\n");
   PrintString("Introduce program:\n");
   PrintString("This program has 2 main function:\n");
   PrintString("  1. Print ASCII table\n");

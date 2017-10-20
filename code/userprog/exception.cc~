@@ -61,7 +61,7 @@ ExceptionHandler(ExceptionType which)
          printf("No valid translation found %d %d\n", which, type);
          break;
        case ReadOnlyException:     
-         printf("Write attempted tp page marked %d %d\n", which, type);
+         printf("Write attempted to page marked %d %d\n", which, type);
          break;
        case BusErrorException:
          printf("Translaion resulted in an %d %d\n", which, type);
@@ -112,7 +112,7 @@ ExceptionHandler(ExceptionType which)
                machine->WriteRegister(2,-1); // trả về lỗi cho chương
                // trình người dùng
 
-               delete filename;
+               delete[] filename;
                break;
              }
             DEBUG('a',"\n Finish reading filename.");
@@ -120,13 +120,13 @@ ExceptionHandler(ExceptionType which)
              {
                printf("\n Error create file '%s'",filename);
                machine->WriteRegister(2,-1);
-               delete filename;
+               delete[] filename;
                break;
              }
              machine->WriteRegister(2,0); // trả về cho chương trình
              // người dùng thành công
 
-             delete filename;
+             delete[] filename;
              break;
            }
            
@@ -148,7 +148,7 @@ ExceptionHandler(ExceptionType which)
              machine->WriteRegister(2,0); // trả về cho chương trình
              // người dùng thành công
 
-             delete str;
+             delete[] str;
              break;
            }
 
@@ -192,7 +192,7 @@ ExceptionHandler(ExceptionType which)
                    number = -number; 
                  machine->WriteRegister(2, number);
                }
-             delete buffer;
+             delete[] buffer;
              break;
            }
 
@@ -223,16 +223,16 @@ ExceptionHandler(ExceptionType which)
                strInt[i] = buffer[nDigits - i - 1];
              strInt[nDigits] = '\0';
              gSynchConsole->Write(strInt, nDigits);
-             delete buffer;
-             delete strInt;
+             delete[] buffer;
+             delete[] strInt;
              break;
            }
 
            case SC_ReadChar:
            {
-             char* buffer = new char[1];
-             int nCharacters = gSynchConsole->Read(buffer, 1);
-             machine->WriteRegister(2, buffer[0]);
+             char* buffer = new char[MAX_STR_LENGTH];
+             int nCharacters = gSynchConsole->Read(buffer, MAX_STR_LENGTH);
+             machine->WriteRegister(2, buffer[nCharacters -1]);
              delete buffer;
              break;
            }
@@ -248,7 +248,6 @@ ExceptionHandler(ExceptionType which)
            case SC_ReadString:
            {
              int virtAddr;
-             char* str;
              int length;
              virtAddr = machine->ReadRegister(4);
              length = machine->ReadRegister(5);
@@ -263,7 +262,7 @@ ExceptionHandler(ExceptionType which)
                while (buffer[i] != '\n' && i < length) i++;
                buffer[i] = '\0';
                machine->System2User(virtAddr, length, buffer);
-               delete buffer;
+               delete[] buffer;
                machine->WriteRegister(2, 0);
                break;
              }
@@ -281,9 +280,12 @@ ExceptionHandler(ExceptionType which)
                gSynchConsole->Write(str + i++, 1); 
              }
              machine->WriteRegister(2,0);
-             delete str;
+             delete[] str;
              break;
            }          
+
+           default:
+             interrupt->Halt();
          }
          machine->registers[PrevPCReg] = machine->registers[PCReg];
          machine->registers[PCReg] = machine->registers[NextPCReg];

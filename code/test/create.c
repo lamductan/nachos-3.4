@@ -21,7 +21,7 @@ int main()
   }
   Halt();*/
   int res;
-  if (Create("ILoveYPhung.txt") == 0)
+  if (Create("test.txt") == 0)
   {
     res = Sub(43, 23);
     print("\Create file ~");

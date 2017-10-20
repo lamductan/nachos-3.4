@@ -1,8 +1,8 @@
 #include "syscall.h"
 
 int main() {
-  char c[1000];
-  ReadString(c, 1000);
+  char c[MAX_STR_LENGTH];
+  ReadString(c, MAX_STR_LENGTH);
   PrintString(c);
   return 0;
 }

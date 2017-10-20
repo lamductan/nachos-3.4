@@ -4,10 +4,11 @@
 int main()
 {
   int number;
-  print("Test ReadInt and PrintInt\n");
+  PrintString("Test ReadInt and PrintInt\n");
+  PrintString("Enter a number: ");
   number = ReadInt();
+  PrintString("\nYour number is: ");
   PrintInt(number);
-  print("\n");
-  PrintInt(7052017);
+  PrintChar('\n');
   return 0; 
 }

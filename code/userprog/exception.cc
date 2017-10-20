@@ -78,6 +78,7 @@ ExceptionHandler(ExceptionType which)
        case SyscallException:
          switch (type)
          {
+           // System call Halt
            case SC_Halt:
              DEBUG('a', "\n Shutdown, initiated by user program.");
              printf ("\n Shutdown, initiated by user program.");
@@ -100,33 +101,27 @@ ExceptionHandler(ExceptionType which)
              char* filename;
              DEBUG('a',"\n SC_Create call ...");
              DEBUG('a',"\n Reading virtual address of filename");
-             // Lấy tham số tên tập tin từ thanh ghi r4
              virtAddr = machine->ReadRegister(4);
              DEBUG ('a',"\n Reading filename.");
-             // MaxFileLength là = 32
              filename = machine->User2System(virtAddr,MaxFileLength+1);
              if (filename == NULL)
              {
                printf("\n Not enough memory in system");
                DEBUG('a',"\n Not enough memory in system");
-               machine->WriteRegister(2,-1); // trả về lỗi cho chương
-               // trình người dùng
-
-               delete filename;
+               machine->WriteRegister(2,-1); 
+               delete[] filename;
                break;
              }
-            DEBUG('a',"\n Finish reading filename.");
+             DEBUG('a',"\n Finish reading filename.");
              if (!fileSystem->Create(filename,0))
              {
                printf("\n Error create file '%s'",filename);
                machine->WriteRegister(2,-1);
-               delete filename;
+               delete[] filename;
                break;
              }
-             machine->WriteRegister(2,0); // trả về cho chương trình
-             // người dùng thành công
-
-             delete filename;
+             machine->WriteRegister(2,0); 
+             delete[] filename;
              break;
            }
            
@@ -134,24 +129,21 @@ ExceptionHandler(ExceptionType which)
            {          
              int virtAddr;
              char* str;
-             // Lấy tham số chuoi từ thanh ghi r4
              virtAddr = machine->ReadRegister(4);
              str = machine->User2System(virtAddr,1000);
              if (str != NULL)
              {
                printf("%s", str);
-               machine->WriteRegister(2,0); // trả về cho chương trình
-             // người dùng thành công 
+               machine->WriteRegister(2,0); 
                break;
              }
              printf("");
-             machine->WriteRegister(2,0); // trả về cho chương trình
-             // người dùng thành công
-
-             delete str;
+             machine->WriteRegister(2,0); 
+             delete[] str;
              break;
            }
-
+           
+           // System call ReadInt: read an integer from user's input
            case SC_ReadInt:
            {
              DEBUG('a', "\nRead an integer\n");
@@ -159,31 +151,40 @@ ExceptionHandler(ExceptionType which)
              int nDigits;
              bool isNumber = true;
              char* buffer = new char[MAX_INT_LENGTH];
+             // Read number string to buffer
              nDigits = gSynchConsole->Read(buffer, MAX_INT_LENGTH);
              int isNegative = 0;
              int i = 0;
+             // Count number of '-' to determine whether number is positive or negative
              while (buffer[i] == '-') 
              {
                isNegative++;
                i++;
              }
 
+             // Calculate absolute value of nunber
+             // Use by call: int x = ReadInt()
              for(; i < nDigits; i++) 
              {
+                // Break if find terminated character
                 if (buffer[i] == '\0' || buffer[i] == '\n')
                    break;
 
+                // Break if find a non-digit character
+                // Set isNumber false
                 if (buffer[i] < '0' || buffer[i] > '9')
                 {
                   isNumber = false;
                   break;
                 }
+                // Update number's value
                 else
                 {
                   number = number*10 + buffer[i] - '0';
                 }
              }
-
+ 
+             // return to register
              if (!isNumber)
                machine->WriteRegister(2, 0);
              else
@@ -192,10 +193,12 @@ ExceptionHandler(ExceptionType which)
                    number = -number; 
                  machine->WriteRegister(2, number);
                }
-             delete buffer;
+             delete[] buffer;
              break;
            }
 
+           // Syscall PrintInt: print an integer to console.
+           // Use by call: PrintInt(x), x is an int-type variable
            case SC_PrintInt:
            {
              DEBUG('a', "Print an integer to console.\n");
@@ -209,10 +212,14 @@ ExceptionHandler(ExceptionType which)
                isNegative = true;
                number = -number;
              }
+
+             // store digits in reverse order
              do {
                buffer[nDigits++] = (number % 10) + '0';
                number /= 10;
              } while (number != 0);
+
+             // store digits in right order
              char* strInt = new char[nDigits + 2];
              int i = 0;
              if (isNegative) {
@@ -222,21 +229,30 @@ ExceptionHandler(ExceptionType which)
              for(; i < nDigits; i++)
                strInt[i] = buffer[nDigits - i - 1];
              strInt[nDigits] = '\0';
+
+             // print string to console
              gSynchConsole->Write(strInt, nDigits);
-             delete buffer;
-             delete strInt;
+             delete[] buffer;
+             delete[] strInt;
+
+             // return number of written characters
+             machine->WriteRegister(2, nDigits);
              break;
            }
 
+           // Syscall ReadChar: read a character from user's input
+           // Use by call: char c = ReadChar()
            case SC_ReadChar:
            {
-             char* buffer = new char[1];
-             int nCharacters = gSynchConsole->Read(buffer, 1);
-             machine->WriteRegister(2, buffer[0]);
-             delete buffer;
+             char* buffer = new char[MAX_STR_LENGTH];
+             int nCharacters = gSynchConsole->Read(buffer, MAX_STR_LENGTH);
+             machine->WriteRegister(2, buffer[nCharacters -1]);
+             delete[] buffer;
              break;
            }
            
+           // Syscall PrintChar: print a character to console
+           // Use by call: PrintChar(c), c is a char-type variable
            case SC_PrintChar:
            {
              char c = machine->ReadRegister(4);
@@ -245,10 +261,11 @@ ExceptionHandler(ExceptionType which)
              break;
            }
 
+           // Syscall ReadString: read a string from user's input
+           // Used by call ReadString(str, STR_LENGTH), str: char[], STR_LENGTH: integer
            case SC_ReadString:
            {
              int virtAddr;
-             char* str;
              int length;
              virtAddr = machine->ReadRegister(4);
              length = machine->ReadRegister(5);
@@ -258,33 +275,46 @@ ExceptionHandler(ExceptionType which)
              }
              else {
                char* buffer = new char[length + 1];
+               // Read string to buffer
                gSynchConsole->Read(buffer, length);
                int i = 0;
+               // Find the terminated character
                while (buffer[i] != '\n' && i < length) i++;
+               // Set terminated character to '\0'
                buffer[i] = '\0';
+               // Transfer data from kernelspace to userspace
                machine->System2User(virtAddr, length, buffer);
-               delete buffer;
+               delete[] buffer;
                machine->WriteRegister(2, 0);
                break;
              }
            }
 
+           // Syscall PrintString: print a string to console
+           // Use by call: PringString(str), str: char[]
            case SC_PrintString:
            {
              int virtAddr;
              char* str;
              virtAddr = machine->ReadRegister(4);
+             // Transfer data from userspace to kernelspace
              str = machine->User2System(virtAddr, MAX_STR_LENGTH);
              int i = 0;
+             // Print each character to console respectively
              while (str[i])
              {
                gSynchConsole->Write(str + i++, 1); 
              }
              machine->WriteRegister(2,0);
-             delete str;
+             delete[] str;
              break;
            }          
+
+           default:
+             interrupt->Halt();
          }
+
+         // Update program counters
          machine->registers[PrevPCReg] = machine->registers[PCReg];
          machine->registers[PCReg] = machine->registers[NextPCReg];
          machine->registers[NextPCReg] += 4;
