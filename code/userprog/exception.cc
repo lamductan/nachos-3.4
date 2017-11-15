@@ -84,6 +84,7 @@ ExceptionHandler(ExceptionType which)
              printf ("\n Shutdown, initiated by user program.");
              interrupt->Halt();
              break;
+
            case SC_Sub:
            {
              int op1;
@@ -95,7 +96,8 @@ ExceptionHandler(ExceptionType which)
              machine->WriteRegister(2, result);
              break;
            }
-           case SC_Create:
+
+           case SC_CreateFile:
            {
              int virtAddr;
              char* filename;
@@ -307,6 +309,60 @@ ExceptionHandler(ExceptionType which)
              }
              machine->WriteRegister(2,0);
              delete[] str;
+             break;
+           }
+
+           case SC_Open:
+           {
+             int virtAddr;
+             char* filename;
+             int openFileType;
+             virtAddr = machine->ReadRegister(4);
+             filename = machine->User2System(virtAddr, MaxFileLength+1);
+             openFileType = machine->ReadRegister(5);
+             if (openFileType != 0 && openFileType != 1) {
+               printf("Open file type can only equal 0 or 1\n");
+               machine->WriteRegister(2,-1);
+               break;
+             } 
+             if (filename == NULL) {
+               printf("Not enough memory in system\n");
+               machine->WriteRegister(2,-1);
+               break;
+             }
+             else {
+               OpenFile* of = fileSystem->Open(filename, openFileType);
+               if (of != NULL) {
+                 int res = currentThread->space->insertFile(of);
+                 if (res == -1)
+                   printf("Not enough memory\n");
+                 else printf("Open file successfully\n");
+                 machine->WriteRegister(2,res);
+                 break;
+               }       
+               else {
+                 printf("Open file failed\n");
+                 machine->WriteRegister(2,-1);
+                 break;
+               }
+             }
+           }
+           
+           case SC_Close:
+           {
+             int id = machine->ReadRegister(4);
+             if (id < 0 || id >= FileEntries) {
+               printf("Wrong Parameter\n");
+               machine->WriteRegister(2,-1);
+               break;
+             }
+             if (currentThread->space->removeFile(id)) {
+               printf("Close file successfully\n");
+             }
+             else {
+               printf("File is not opened\n");
+             }
+             machine->WriteRegister(2,0);
              break;
            }          
 

@@ -116,6 +116,13 @@ AddrSpace::AddrSpace(OpenFile *executable)
 			noffH.initData.size, noffH.initData.inFileAddr);
     }
 
+    fileEntry = new OpenFile*[FileEntries];
+    fileSystem->Create("stdin",0);
+    fileSystem->Create("stdout",0);
+    fileEntry[0] = fileSystem->Open("stdin");
+    fileEntry[1] = fileSystem->Open("stdout");
+    for(int i = 2; i < FileEntries; i++)
+       fileEntry[i] = NULL;
 }
 
 //----------------------------------------------------------------------
@@ -126,6 +133,9 @@ AddrSpace::AddrSpace(OpenFile *executable)
 AddrSpace::~AddrSpace()
 {
    delete pageTable;
+   for(int i = 0; i < FileEntries; i++)
+     removeFile(i);
+   delete fileEntry;
 }
 
 //----------------------------------------------------------------------
@@ -183,4 +193,39 @@ void AddrSpace::RestoreState()
 {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+}
+
+// Insert an opened file to File Entry
+int
+AddrSpace::insertFile(OpenFile * of) {
+  int i = 2;
+  while (i < FileEntries) {
+    if (fileEntry[i] == NULL) {
+      fileEntry[i] = of;
+      return i; 
+    }
+    i++;
+  }
+  return -1;
+}
+
+// Return OpenFile object
+OpenFile* 
+AddrSpace::returnFile(int fd) {
+  if (fd < 0 || fd >= FileEntries)
+    return NULL;
+
+  return fileEntry[fd];
+}
+
+// Remove an opened file out File Entry
+bool 
+AddrSpace::removeFile(int fd) {
+  OpenFile* f = fileEntry[fd];
+  if (f) {
+    delete f;
+    fileEntry[fd] = NULL;
+    return true;
+  }
+  return false;
 }

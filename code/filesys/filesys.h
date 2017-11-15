@@ -53,11 +53,11 @@ class FileSystem {
 	return TRUE; 
 	}
 
-    OpenFile* Open(char *name) {
+    OpenFile* Open(char *name, int type = READ_AND_WRITE) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 
 	  if (fileDescriptor == -1) return NULL;
-	  return new OpenFile(fileDescriptor);
+	  return new OpenFile(fileDescriptor, type);
       }
 
     bool Remove(char *name) { return Unlink(name) == 0; }
@@ -77,13 +77,15 @@ class FileSystem {
     bool Create(char *name, int initialSize);  	
 					// Create a file (UNIX creat)
 
-    OpenFile* Open(char *name); 	// Open a file (UNIX open)
+    OpenFile* Open(char *name, int type = READ_AND_WRITE); 	// Open a file (UNIX open)
 
     bool Remove(char *name);  		// Delete a file (UNIX unlink)
 
     void List();			// List all the files in the file system
 
     void Print();			// List all the files and their contents
+
+    
 
   private:
    OpenFile* freeMapFile;		// Bit map of free disk blocks,
