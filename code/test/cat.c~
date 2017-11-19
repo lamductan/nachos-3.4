@@ -2,21 +2,20 @@
 #include "copyright.h"
 
 int main() {
-  Open("test0112.txt", 0);
-  Open("test456.txt", 1);
-  Open("test000", 0);
-  Open("test0.txt", 0);
-  Open("test1.txt", 0);
-  Open("test2.txt", 0);
-  Open("test0.txt", 0);
-  Open("test3.txt", 0);
-  Open("test4.txt", 0);
-  Open("test5.txt", 0);
-  Open("test6.txt", 0);
-  Open("test7.txt", 0);
-  Open("test8.txt", 0);
-  Open("test9.txt", 0);
-  Close(1);
-  Close(9);
-  Open("test0112.txt", 0);
+  int len;
+  char buffer[MAX_STR_LENGTH];
+  PrintString("Enter name of the file which be copy (source file): ");
+  ReadString(buffer, MAX_STR_LENGTH);
+  if (Open(buffer, 1) == -1) {
+    PrintString("Source file name error!");
+    PrintChar('\n');
+    return 0;
+  }
+
+  len = Seek(-1,2);
+  Seek(0,2);
+  Read(buffer, len, 2);
+  PrintChar('\n');
+  PrintString(buffer);
+  PrintChar('\n');
 }

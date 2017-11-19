@@ -1,0 +1,24 @@
+#include "syscall.h"
+
+int main() {
+  int l;
+  char c;
+  char filename[MAX_STR_LENGTH];
+  PrintString("Enter name of the file which be reversed (source file): ");
+  ReadString(filename, MAX_STR_LENGTH);
+  Open(filename, 1);
+  PrintString("Enter name of the file which saves result (dest file): ");
+  ReadString(filename, MAX_STR_LENGTH);
+  Open(filename, 0);
+  l = Seek(-1, 2);
+  while (--l >= 0) {
+    Seek(l, 2);
+    Read(&c, 1, 2);
+    Write(&c, 1, 3);
+  }
+  PrintString("Reverse succesfully");
+  PrintChar('\n');
+  Close(2);
+  Close(3);
+  return 0;
+}

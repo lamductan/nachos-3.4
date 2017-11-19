@@ -4,17 +4,21 @@
 
 int main() 
 {
-  char* filename = "test0112.txt";
+  char filename[MAX_STR_LENGTH];
+  PrintString("Enter name of the file which be created: ");
+  ReadString(filename, MAX_STR_LENGTH);
   if (CreateFile(filename) == 0)
   {
-    print("\Create file ~");
+    print("Create file ");
     print(filename);
-    print(" success.");
+    print(" success.\n");
   }
   else
   {
-    print("\Create file ~");
+    print("Create file ");
     print(filename);
-    print(" failed.~");
+    print(" failed.\n");
   }
+  
+  return 0;
 }

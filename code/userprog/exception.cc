@@ -278,7 +278,12 @@ ExceptionHandler(ExceptionType which)
              else {
                char* buffer = new char[length + 1];
                // Read string to buffer
-               gSynchConsole->Read(buffer, length);
+               int res = gSynchConsole->Read(buffer, length);
+               if (res == -1) {
+                 machine->WriteRegister(2, -1);
+                 break;
+               }
+
                int i = 0;
                // Find the terminated character
                while (buffer[i] != '\n' && i < length) i++;
@@ -312,6 +317,7 @@ ExceptionHandler(ExceptionType which)
              break;
            }
 
+           // Syscall Open file:
            case SC_Open:
            {
              int virtAddr;
@@ -348,6 +354,7 @@ ExceptionHandler(ExceptionType which)
              }
            }
            
+           // Syscall Close file:
            case SC_Close:
            {
              int id = machine->ReadRegister(4);
@@ -365,6 +372,182 @@ ExceptionHandler(ExceptionType which)
              machine->WriteRegister(2,0);
              break;
            }          
+           
+           // Syscall Read from file:
+           case SC_Read:
+           {
+             int virtAddr;
+             int charcount;
+             int id;
+             virtAddr = machine->ReadRegister(4);
+             charcount = machine->ReadRegister(5); 
+             id = machine->ReadRegister(6);
+
+             if (charcount < 0) {
+                printf("Wrong charcount\n");
+                machine->WriteRegister(2,-1);
+                break;
+             }
+  
+             if (id == ConsoleInput) {
+               if (charcount < 0) {
+                 machine->WriteRegister(2, -1);
+                 break;
+               }
+               else {
+                 char* buffer = new char[charcount + 1];
+                 // Read string to buffer
+                 int res = gSynchConsole->Read(buffer, charcount);
+                 if (res == -1) {  // End of stream
+                   machine->WriteRegister(2, -2); // return -2
+                   break;
+                 }
+                 int i = 0;
+                 // Find the terminated character
+                 while (buffer[i] != '\n' && i < charcount) i++;
+                 // Set terminated character to '\0'
+                 buffer[i] = '\0';
+                 // Transfer data from kernelspace to userspace
+                 machine->System2User(virtAddr, charcount, buffer);
+                 delete[] buffer;
+                 machine->WriteRegister(2, res);
+                 break;
+               }
+             }
+             else if (id == ConsoleOutput) {
+               // cannot read from Console Output
+               printf("cannot read from Console Output\n");
+               machine->WriteRegister(2,-1);
+               break;
+             }
+             // Read from file
+             else {
+               if (id < 0 || id >= FileEntries) {
+                  printf("Wrong id\n");
+                  machine->WriteRegister(2,-1);
+                  break;
+               } 
+               OpenFile* of = currentThread->space->returnFile(id);
+               if (of == NULL) {
+                 printf("File id is not opened\n");
+                 machine->WriteRegister(2,-1);
+                 break;
+               }
+               int i = 0;
+               char* buffer = new char[charcount + 1];
+               buffer[0] = 'a';
+               int r = 1;
+               while (i < charcount && r) {
+                 r = of->Read(buffer + i,1);
+                 i++;
+               }
+               buffer[i] = '\0';
+               machine->System2User(virtAddr, charcount, buffer);
+               if (r == 0) {
+                  machine->WriteRegister(2,-2);
+                  delete[] buffer;
+                  break;
+               }
+               machine->WriteRegister(2,i);
+               delete[] buffer;
+               break;
+             }
+           }
+
+           // Syscall Write to file
+           case SC_Write:
+           {
+             int virtAddr;
+             int charcount;
+             int id;
+             virtAddr = machine->ReadRegister(4);
+             charcount = machine->ReadRegister(5); 
+             id = machine->ReadRegister(6);
+             if (charcount < 0) {
+                printf("Wrong charcount\n");
+                machine->WriteRegister(2,-1);
+                break;
+             }  
+             // Transfer data from userspace to kernelspace
+             char* buffer = machine->User2System(virtAddr, charcount + 1);
+             int len = 0;
+             while (len < charcount && buffer[len]) len++;
+             buffer[len] = '\0';
+             if (id == ConsoleOutput) {
+               int i = 0;
+               // Print each character to console respectively
+               while (buffer[i])
+               {
+                 gSynchConsole->Write(buffer + i++, 1); 
+               }
+               machine->WriteRegister(2,charcount);
+               delete[] buffer;
+               break;
+             }
+             else if (id == ConsoleInput) {
+               // cannot write to Console Input
+               printf("cannot write to Console Input\n");
+               machine->WriteRegister(2,-1);
+               break;
+             }
+             // Write to file
+             else {
+               if (id < 0 || id >= FileEntries) {
+                  printf("Wrong id\n");
+                  machine->WriteRegister(2,-1);
+                  break;
+               } 
+               OpenFile* of = currentThread->space->returnFile(id);
+               if (of == NULL) {
+                 printf("File id is not opened\n");
+                 machine->WriteRegister(2,-1);
+                 break;
+               }
+               if (of->isReadOnly()) {
+                 printf("Cannot write to this file. File is read-only.\n");
+                 machine->WriteRegister(2,-1);
+                 break;                                   
+               }
+
+               int l = 0;
+               while (l < charcount && buffer[l]) of->Write(buffer + l++, 1);
+               machine->WriteRegister(2,l);
+               delete[] buffer;
+               break;
+             }
+           }
+
+           // Seek cursor to pos
+           case SC_Seek:
+           {
+             int pos = machine->ReadRegister(4);
+             int id = machine->ReadRegister(5);
+             if (id == ConsoleInput || id == ConsoleOutput) {
+               printf("Cannot seek in console mode\n");
+               machine->WriteRegister(2,-1);
+               break;
+             }
+             if (id < 0 || id >= FileEntries) {
+               printf("File id is not valid\n");
+               machine->WriteRegister(2,-1);
+               break;
+             } 
+             OpenFile* of = currentThread->space->returnFile(id);
+             if (of == NULL) {
+               printf("File id is not opened");
+               machine->WriteRegister(2,-1);
+               break;
+             }
+             int len = of->Length();
+             if (pos == -1 || pos >= len) {
+               of->Seek(len);
+               machine->WriteRegister(2,len);
+               break;
+             }
+             of->Seek(pos);
+             machine->WriteRegister(2,pos);
+             break;
+           }
 
            default:
              interrupt->Halt();

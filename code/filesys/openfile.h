@@ -33,6 +33,10 @@ class OpenFile {
   public:
     OpenFile(int f, int type = READ_AND_WRITE) { file = f; this->type = type; currentOffset = 0; }	// open the file
     ~OpenFile() { Close(file); }			// close the file
+    
+    void Seek(int position) {
+                currentOffset = position;
+                }
 
     int ReadAt(char *into, int numBytes, int position) { 
     		Lseek(file, position, 0); 
