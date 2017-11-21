@@ -470,17 +470,17 @@ ExceptionHandler(ExceptionType which)
              }  
              // Transfer data from userspace to kernelspace
              char* buffer = machine->User2System(virtAddr, charcount + 1);
-             int len = 0;
-             while (len < charcount && buffer[len]) len++;
-             buffer[len] = '\0';
+             //int len = 0;
+             //while (len < charcount && buffer[len]) len++;
+             //buffer[len] = '\0';
              if (id == ConsoleOutput) {
                int i = 0;
                // Print each character to console respectively
-               while (buffer[i])
+               while (i < charcount && buffer[i])
                {
                  gSynchConsole->Write(buffer + i++, 1); 
                }
-               machine->WriteRegister(2,charcount);
+               machine->WriteRegister(2,i);
                delete[] buffer;
                break;
              }
