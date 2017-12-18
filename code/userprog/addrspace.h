@@ -15,15 +15,21 @@
 
 #include "copyright.h"
 #include "filesys.h"
+#include "synch.h"
+//#include "translate.h"
 
 #define UserStackSize		1024 	// increase this as necessary!
 #define FileEntries		10
+class Semaphore;
+//class TranslationEntry;
 
 class AddrSpace {
   public:
     AddrSpace(OpenFile *executable);	// Create an address space,
 					// initializing it with the program
 					// stored in the file "executable"
+    //AddrSpace() {}    
+    AddrSpace(char* filename);    
     ~AddrSpace();			// De-allocate an address space
 
     void InitRegisters();		// Initialize user-level CPU registers,
@@ -42,6 +48,7 @@ class AddrSpace {
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
     OpenFile** fileEntry;
+    Semaphore* addrSem;
 };
 
 #endif // ADDRSPACE_H

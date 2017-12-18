@@ -513,7 +513,7 @@ ExceptionHandler(ExceptionType which)
                while (l < charcount && buffer[l]) of->Write(buffer + l++, 1);
                machine->WriteRegister(2,l);
                delete[] buffer;
-               break;
+       		break;
              }
            }
 
@@ -548,9 +548,23 @@ ExceptionHandler(ExceptionType which)
              machine->WriteRegister(2,pos);
              break;
            }
+            
+            // Syscall Exec
+           case SC_Exec:
+           {
+             int virtAddr;
+             char* filename;
+             virtAddr = machine->ReadRegister(4);
+             filename = machine->User2System(virtAddr, MaxFileLength + 1);
+             if (filename == NULL) {
+                machine->WriteRegister(2,-1);
+                break;
+             }
+             machine->WriteRegister(2,pTab->ExecUpdate(filename));
+           }
 
            default:
-             interrupt->Halt();
+		   interrupt->Halt();
          }
 
          // Update program counters

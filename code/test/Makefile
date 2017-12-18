@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
  
-all: halt shell matmult sort sub createfile ReadPrintInt ReadPrintChar ReadPrintString ascii help cat copy echo reverse insert
+all: halt shell matmult sort sub createfile ReadPrintInt ReadPrintChar ReadPrintString ascii help cat copy echo reverse insert testExec
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -137,3 +137,9 @@ insert.o: insert.c
 insert: insert.o start.o
 	$(LD) $(LDFLAGS) start.o insert.o -o insert.coff
 	../bin/coff2noff insert.coff insert
+
+testExec.o: testExec.c
+	$(CC) $(CFLAGS) -c testExec.c
+testExec: testExec.o start.o
+	$(LD) $(LDFLAGS) start.o testExec.o -o testExec.coff
+	../bin/coff2noff testExec.coff testExec
