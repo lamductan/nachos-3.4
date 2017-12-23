@@ -20,9 +20,9 @@ int main() {
   printInt(n);
   PrintString("------");
 
-  svProg = Exec("./test/sinhvien", svId, n);
+ // svProg = Exec("./test/sinhvien", svId, n);
   //vnProg = Exec("./test/voinuoc", vnId, n);
-  Join(svProg);
+ // Join(svProg);
   //Join(vnProg);
 
   Exit(0);

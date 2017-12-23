@@ -1,10 +1,10 @@
-#include "system.h"
+#include "syscall.h"
 
 int main(int argc, char** argv) {  
-  Wait("sinhvien");
-  Wait("mutex");
   int fidSinhVien, i, v;
   char c;
+  Wait("sinhvien");
+  Wait("mutex");
   fidSinhVien = 0;
   i = 0;
   while (argv[0][i] >= '0' && argv[0][i] <= '9') fidSinhVien = fidSinhVien*10 + argv[0][i] - '0';

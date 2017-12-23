@@ -1,6 +1,8 @@
-#include "system.h"
+#include "syscall.h"
 
 int main(int argc, char** argv) {  
+  Wait("sinhvien");
+  Wait("mutex");
   int fidSinhVien, i, v;
   char c;
   fidSinhVien = 0;
@@ -19,5 +21,8 @@ int main(int argc, char** argv) {
       v = 0;
     }
   } while (c != '\n');
+
+  Signal("mutex");
+  //Signal("voinuoc");
   Exit(0);
 }
