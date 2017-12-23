@@ -1,0 +1,14 @@
+#include "syscall.h"
+
+void voinuoc(int n, int fidVoiNuoc) {
+  if (n <= 0) return;
+  Wait("voinuoc");
+  Wait("mutex");  
+  Signal("mutex");
+  Signal("sinhvien");
+}
+
+int main(int argc, char** argv) {
+  //voinuoc(
+  Exit(0);
+}

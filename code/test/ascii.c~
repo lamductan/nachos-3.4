@@ -11,7 +11,7 @@ int main()
   char* AsciiNames_3[] = { "[DATA LINK ESCAPE]", "[DEVICE CONTROL 1]", "[DEVICE CONTROL 2]", "[DEVICE CONTROL 3]",
                          "[DEVICE CONTROL 4]", "[NEGATIVE ACKNOWLEDGE]", "[SYNCHRONOUS IDLE]", "[ENG OF TRANS. BLOCK]"};
   char* AsciiNames_4[] = { "[CANCEL]", "[END OF MEDIUM]", "[SUBSTITUTE]", "[ESCAPE]",
-                         "[FILE SEPERATOR]", "[GROUP SEPERATOR]", "[RECORD SEPARATOR]", "[UNIT SEPARATOR]"};
+                         "[FILE SEPARATOR]", "[GROUP SEPARATOR]", "[RECORD SEPARATOR]", "[UNIT SEPARATOR]"};
   PrintString("Decimal\tChar\n");
   for(; i < 8; i++) {
      PrintInt(i);
@@ -55,5 +55,5 @@ int main()
   PrintChar('\t');
   PrintString("[DEL]\n");
   
-  return 0;    
+  Exit(0);    
 }

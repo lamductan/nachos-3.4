@@ -99,7 +99,7 @@ AddrSpace::AddrSpace(OpenFile *executable)
     }
     
 // zero out the entire address space, to zero the unitialized data segment  and the stack segment
-    bzero(&(machine->mainMemory[pageTable[i].physicalPage*PageSize]), PageSize);
+    bzero(machine->mainMemory, size);
 
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0) {
@@ -136,13 +136,15 @@ AddrSpace::AddrSpace(char * filename)
     //DEBUG(dbgFile,"\n Error opening file.");
     return;
   }
+
   //đọc header của file
   executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
   if ((noffH.noffMagic != NOFFMAGIC) && (WordToHost(noffH.noffMagic) == NOFFMAGIC))
     SwapHeader(&noffH);
   ASSERT(noffH.noffMagic == NOFFMAGIC);
-  addrSem = new Semaphore(filename, 0);
+  
   addrSem->P();
+  
   // how big is address space?
   size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;
   // we need to increase the size
@@ -151,13 +153,20 @@ AddrSpace::AddrSpace(char * filename)
   size = numPages * PageSize;
   // Check the available memory enough to load new process
   //debug
-  /*if (numPages > số trang còn trống){
+//printf("NumPages = %d, gPhysPageBitMap->NumClear() =  %d\n", numPages, gPhysPageBitMap->NumClear());
+  if (numPages > gPhysPageBitMap->NumClear()){
+    
     printf("\nAddrSpace:Load: not enough memory for new process..!");
     numPages = 0;
     delete executable;
     addrSem->V();
-    return ;
-  }*/
+  }
+  ASSERT(numPages <= gPhysPageBitMap->NumClear());		// check we're not trying
+						// to run anything too big --
+				    		// at least until we have
+						// virtual memory
+
+  DEBUG('a', "Initializing address space, num pages %d, size %d\n", numPages, size);
   // first, set up the translation
   pageTable = new TranslationEntry[numPages];
   for (i = 0; i < numPages; i++) {
@@ -171,14 +180,23 @@ AddrSpace::AddrSpace(char * filename)
     // pages to be read-only
     // xóa các trang này trên memory
     bzero(&(machine->mainMemory[pageTable[i].physicalPage*PageSize]), PageSize);
-    printf("phyPage %d \n",pageTable[i].physicalPage);
   }
+    fileEntry = new OpenFile*[FileEntries];
+    fileSystem->Create("stdin",0);
+    fileSystem->Create("stdout",0);
+    fileEntry[0] = fileSystem->Open("stdin");
+    fileEntry[1] = fileSystem->Open("stdout");
+    for(int i = 2; i < FileEntries; i++)
+       fileEntry[i] = NULL;
+
   addrSem->V();
+
   // Calculate numCodePage and numDataPage
   numCodePage = divRoundUp(noffH.code.size, PageSize);
   // Calculate lastCodePageSize
   lastCodePageSize = noffH.code.size - (numCodePage-1)*PageSize;
   tempDataSize = noffH.initData.size - (PageSize - lastCodePageSize);
+  
   if (tempDataSize < 0){
     numDataPage = 0;
     firstDataPageSize = noffH.initData.size;
@@ -205,9 +223,9 @@ AddrSpace::AddrSpace(char * filename)
   // if(noffH.initData.size > 0)
     executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr])+pageTable[i].physicalPage*PageSize, j < (numDataPage-1) ? PageSize:lastDataPageSize, noffH.initData.inFileAddr + j*PageSize + firstDataPageSize);
     i++;
-  }
-  delete executable;
-  return ;
+  } 
+  delete executable; 
+   
 }
 
 
@@ -219,10 +237,9 @@ AddrSpace::AddrSpace(char * filename)
 AddrSpace::~AddrSpace()
 {
    delete pageTable;
-   delete addrSem;
-   //for(int i = 0; i < FileEntries; i++)
-     //removeFile(i);
-   //delete fileEntry;
+   for(int i = 0; i < FileEntries; i++)
+     removeFile(i);
+   delete fileEntry;
 }
 
 //----------------------------------------------------------------------

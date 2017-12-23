@@ -1,0 +1,28 @@
+#include "syscall.h"
+
+int main() {
+  int len;
+  char buffer[MAX_STR_LENGTH];
+  char* fileSource = buffer + 500;
+  char* fileDest = buffer + 700;
+  fileSource = "abc";
+  if (Open(fileSource, 1) == -1) {
+    print("Source file name error!\n");
+    return 0;
+  }
+  fileDest = "abc1";
+  if (Open(fileDest, 0) == -1) {
+    CreateFile(fileDest);
+    print("Create file successfully\n");
+    Open(fileDest, 0);
+  }
+  
+  len = Seek(-1,2);
+  Seek(0,2);
+  Read(buffer, len, 2);
+  Write(buffer, len, 3);
+
+  print("Copy file done\n");
+
+  return 0;
+}

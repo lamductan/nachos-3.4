@@ -143,7 +143,7 @@ Thread::CheckOverflow()
 void
 Thread::Finish ()
 {
-    (void) interrupt->SetLevel(IntOff);		
+    (void) interrupt->SetLevel(IntOff);
     ASSERT(this == currentThread);
     
     DEBUG('t', "Finishing thread \"%s\"\n", getName());

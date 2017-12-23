@@ -48,7 +48,6 @@ class AddrSpace {
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
     OpenFile** fileEntry;
-    Semaphore* addrSem;
 };
 
 #endif // ADDRSPACE_H

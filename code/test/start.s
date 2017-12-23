@@ -194,7 +194,7 @@ PrintString:
 	j	$31
 	.end PrintString
 
-        .globl Seek
+    .globl Seek
 	.ent	Seek
 Seek:
 	addiu $2,$0,SC_Seek
@@ -202,6 +202,37 @@ Seek:
 	j	$31
 	.end Seek
 
+    .globl printInt
+	.ent	printInt
+printInt:
+	addiu $2,$0,SC_printInt
+	syscall
+	j	$31
+	.end printInt
+
+    .globl CreateSemaphore
+	.ent	CreateSemaphore
+CreateSemaphore:
+	addiu $2,$0,SC_CreateSemaphore
+	syscall
+	j	$31
+	.end CreateSemaphore
+
+    .globl Signal
+	.ent	Signal
+Signal:
+	addiu $2,$0,SC_Signal
+	syscall
+	j	$31
+	.end Signal
+
+    .globl Wait
+	.ent	Wait
+Wait:
+	addiu $2,$0,SC_Wait
+	syscall
+	j	$31
+	.end Wait
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

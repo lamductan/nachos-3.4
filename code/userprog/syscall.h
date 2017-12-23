@@ -36,8 +36,12 @@
 #define SC_ReadString   15
 #define SC_PrintString  16
 #define SC_Seek         17
-#define SC_print        20
+#define SC_CreateSemaphore 18
+#define SC_Signal       19
+#define SC_Wait         20
+#define SC_print        21
 #define SC_Sub          43
+#define SC_printInt     44
 #ifndef IN_ASM
 
 #define MAX_INT_LENGTH 1000
@@ -162,6 +166,17 @@ void ReadString(char* buffer, int length);
 
 /* Write a string to console */
 void PrintString(char* buffer);
+
+void printInt(int);
+
+/*Create Semaphore*/
+int CreateSemaphore(char* name, int semVal);
+
+/*Up Semaphore*/
+int Signal(char* name);
+
+/*Down Semaphore*/
+int Wait(char* name);
 
 #endif /* IN_ASM */
 

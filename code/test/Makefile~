@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
  
-all: halt shell matmult sort sub createfile ReadPrintInt ReadPrintChar ReadPrintString ascii help cat copy echo reverse insert
+all: halt shell matmult sort sub createfile ReadPrintInt ReadPrintChar ReadPrintString ascii help cat copy echo reverse insert testExec copy2 printA printB printC
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -137,3 +137,33 @@ insert.o: insert.c
 insert: insert.o start.o
 	$(LD) $(LDFLAGS) start.o insert.o -o insert.coff
 	../bin/coff2noff insert.coff insert
+
+testExec.o: testExec.c
+	$(CC) $(CFLAGS) -c testExec.c
+testExec: testExec.o start.o
+	$(LD) $(LDFLAGS) start.o testExec.o -o testExec.coff
+	../bin/coff2noff testExec.coff testExec
+
+copy2.o: copy2.c
+	$(CC) $(CFLAGS) -c copy2.c
+copy2: copy2.o start.o
+	$(LD) $(LDFLAGS) start.o copy2.o -o copy2.coff
+	../bin/coff2noff copy2.coff copy2
+
+printA.o: printA.c
+	$(CC) $(CFLAGS) -c printA.c
+printA: printA.o start.o
+	$(LD) $(LDFLAGS) start.o printA.o -o printA.coff
+	../bin/coff2noff printA.coff printA
+
+printB.o: printB.c
+	$(CC) $(CFLAGS) -c printB.c
+printB: printB.o start.o
+	$(LD) $(LDFLAGS) start.o printB.o -o printB.coff
+	../bin/coff2noff printB.coff printB
+
+printC.o: printC.c
+	$(CC) $(CFLAGS) -c printC.c
+printC: printC.o start.o
+	$(LD) $(LDFLAGS) start.o printC.o -o printC.coff
+	../bin/coff2noff printC.coff printC

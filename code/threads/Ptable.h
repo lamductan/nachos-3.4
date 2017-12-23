@@ -2,6 +2,7 @@
 #define PTABLE_H
 
 #include "PCB.h"
+#include "bitmap.h"
 //#include "system.h"
 //#include "synch.h"
 
@@ -11,7 +12,7 @@
 
 class Ptable {
   private:
-    //BitMap bm;
+    BitMap* bm;
     PCB* pcb[MAX_PROCESS];  
     //int psize;
     Semaphore* bmsem;
@@ -20,7 +21,8 @@ class Ptable {
     ~Ptable();
     int ExecUpdate(char* name);
     //int ExitUpdate(int ec);
-    //int joinUpdate(int id);
+    int JoinUpdate(int id);
+    int ExitUpdate(int exitcode);
     //int getFreeSlot();
     //bool isExist(int pid);
     //void remove(int pid);

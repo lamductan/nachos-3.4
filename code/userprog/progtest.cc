@@ -23,6 +23,7 @@
 void
 StartProcess(char *filename)
 {
+    /* 
     OpenFile *executable = fileSystem->Open(filename);
     AddrSpace *space;
 
@@ -30,8 +31,8 @@ StartProcess(char *filename)
 	printf("Unable to open file %s\n", filename);
 	return;
     }
-//    space = new AddrSpace(filename);    
-    space = new AddrSpace(executable);
+    space = new AddrSpace(filename);  
+//    space = new AddrSpace(executable);
     currentThread->space = space;
 
     delete executable;			// close file
@@ -43,6 +44,10 @@ StartProcess(char *filename)
     ASSERT(FALSE);			// machine->Run never returns;
 					// the address space exits
 					// by doing the syscall "exit"
+    */
+    pTab->ExecUpdate(filename);
+    machine->Run();
+    ASSERT(FALSE);
 }
 
 // Data structures needed for the console test.  Threads making

@@ -31,7 +31,8 @@ SynchDisk   *synchDisk;
 Machine *machine;	// user program memory and registers
 SynchConsole *gSynchConsole;
 BitMap *gPhysPageBitMap;
-//Ptable *pTab;
+Semaphore* addrSem;
+Ptable *pTab;
 #endif
 
 #ifdef NETWORK
@@ -153,8 +154,9 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
     gSynchConsole = new SynchConsole();
-    gPhysPageBitMap = new BitMap(256);
-    //pTab = new Ptable();
+    gPhysPageBitMap = new BitMap(NumPhysPages);
+    addrSem = new Semaphore("", 1);
+    pTab = new Ptable();
 #endif
 
 #ifdef FILESYS
@@ -186,6 +188,7 @@ Cleanup()
     delete machine;
     delete gSynchConsole;
     delete gPhysPageBitMap;
+    delete addrSem;
 #endif
 
 #ifdef FILESYS_NEEDED

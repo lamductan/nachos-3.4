@@ -35,7 +35,7 @@ CPP = gcc -E
 INCDIR =-I../userprog -I../threads
 CFLAGS = -G 0 -c $(INCDIR)
  
-all: halt shell matmult sort sub createfile ReadPrintInt ReadPrintChar ReadPrintString ascii help cat copy echo reverse insert testExec
+all: halt shell matmult sort sub createfile ReadPrintInt ReadPrintChar ReadPrintString ascii help cat copy echo reverse insert testExec copy2 printA printB printC sinhvien voinuoc main
 
 start.o: start.s ../userprog/syscall.h
 	$(CPP) $(CPPFLAGS) start.c > strt.s
@@ -143,3 +143,45 @@ testExec.o: testExec.c
 testExec: testExec.o start.o
 	$(LD) $(LDFLAGS) start.o testExec.o -o testExec.coff
 	../bin/coff2noff testExec.coff testExec
+
+copy2.o: copy2.c
+	$(CC) $(CFLAGS) -c copy2.c
+copy2: copy2.o start.o
+	$(LD) $(LDFLAGS) start.o copy2.o -o copy2.coff
+	../bin/coff2noff copy2.coff copy2
+
+printA.o: printA.c
+	$(CC) $(CFLAGS) -c printA.c
+printA: printA.o start.o
+	$(LD) $(LDFLAGS) start.o printA.o -o printA.coff
+	../bin/coff2noff printA.coff printA
+
+printB.o: printB.c
+	$(CC) $(CFLAGS) -c printB.c
+printB: printB.o start.o
+	$(LD) $(LDFLAGS) start.o printB.o -o printB.coff
+	../bin/coff2noff printB.coff printB
+
+printC.o: printC.c
+	$(CC) $(CFLAGS) -c printC.c
+printC: printC.o start.o
+	$(LD) $(LDFLAGS) start.o printC.o -o printC.coff
+	../bin/coff2noff printC.coff printC
+
+sinhvien.o: sinhvien.c
+	$(CC) $(CFLAGS) -c sinhvien.c
+sinhvien: sinhvien.o start.o
+	$(LD) $(LDFLAGS) start.o sinhvien.o -o sinhvien.coff
+	../bin/coff2noff sinhvien.coff sinhvien
+
+voinuoc.o: voinuoc.c
+	$(CC) $(CFLAGS) -c voinuoc.c
+voinuoc: voinuoc.o start.o
+	$(LD) $(LDFLAGS) start.o voinuoc.o -o voinuoc.coff
+	../bin/coff2noff voinuoc.coff voinuoc
+
+main.o: main.c
+	$(CC) $(CFLAGS) -c main.c
+main: main.o start.o
+	$(LD) $(LDFLAGS) start.o main.o -o main.coff
+	../bin/coff2noff main.coff main

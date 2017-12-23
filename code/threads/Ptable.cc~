@@ -2,17 +2,20 @@
 #include "system.h"
 
 Ptable::Ptable() {
-  //bm = new BitMap(256);
-  bmsem = new Semaphore("ptable", 0);
-  pcb[0] = new PCB(0);
-  //pcb[0]->thread = currentThread;
-  pcb[0]->Exec("initThread", 0);
-  DEBUG('a', "kldjfdk\n");
+  bm = new BitMap(MAX_PROCESS);
+  bmsem = new Semaphore("bmsem", 1);
+  for(int i = 0; i < MAX_PROCESS; i++)
+    pcb[i] = NULL;
+  /*pcb[0] = new PCB(0);
+  pcb[0]->thread = currentThread;
+  pcb[0]->Exec("initThread", 0);*/
 }
 
 Ptable::~Ptable() {
-  //delete bm;
+  delete bm;
   delete bmsem;
+  for(int i = 0; i < MAX_PROCESS; i++)
+    if (pcb[i] != NULL) delete pcb[i];
 }
 
 int Ptable::ExecUpdate(char* name) {
@@ -21,20 +24,96 @@ int Ptable::ExecUpdate(char* name) {
   OpenFile* of = fileSystem->Open(name, 0);
   if (of == NULL) return -1;
   if (strcmp(currentThread->name, name) == 0) return -1;
-  int freeSlotID = 0;
-  for (int i = 1; i < MAX_PROCESS; i++)
-    if (pcb[i] == NULL) {
-      freeSlotID = i;
-      break;
-    }
-  if (freeSlotID == 0) {
-    printf("Ptable is full\n");
-    return -1;
+  int freeSlotID;
+  int ParentID = -1;
+  
+  if (bm->NumClear() == MAX_PROCESS) {
+    freeSlotID = 0;
+ //   printf("InitProcess\n");
+    bm->Mark(freeSlotID);
   }
-  pcb[freeSlotID] = new PCB(freeSlotID);
-  int ret = pcb[freeSlotID]->Exec(name, freeSlotID);
+  else {
+    if (strcmp(currentThread->name, name) == 0) {
+      bmsem->V();
+      return -1;
+    }
+    for (int i = 0; i < MAX_PROCESS; i++)
+      if (pcb[i] && pcb[i]->GetThread() == currentThread) {
+        ParentID = i;
+        break;
+      }
+    freeSlotID = bm->Find();
+    //bm->Mark(freeSlotID);
+    if (ParentID == -1) {
+      bmsem->V();
+      return -1;
+    }
+  }
+
+  int ProcessID = freeSlotID;
+ // printf("ProcessID = %d\n", ProcessID);
+ // printf("filename = %s\n", name);
+  pcb[ProcessID] = new PCB(ProcessID);
+ // printf("ParentID = %d\n", ParentID);
+  pcb[ProcessID]->parentID = ParentID;
+  int ret = pcb[ProcessID]->Exec(name, ProcessID);
+  if (ret == -1) {
+    bm->Clear(ProcessID);
+    delete pcb[ProcessID];
+  }
   bmsem->V();
   return ret;
 }
 
+int Ptable::JoinUpdate(int id) {
+  //printf("id = %d\n", id);
+  if (id < 0 || id >= MAX_PROCESS) {
+    printf("Illegal process id\n");
+    return -1;
+  }
+  if (pcb[id] == NULL)
+    return -1;
+  if (pcb[id]->parentID != currentThread->pid) {
+    printf("Join Process is not child of current Process\n");
+    return -1;
+  }
+ // printf("Joining Process %d to Parent Process %d\n", id, currentThread->pid);
+  PCB *currentProcess = pcb[currentThread->pid];
+  currentProcess->IncNumWait();
+ //  printf("Joining Process %d to Parent Process %d 1\n", id, currentThread->pid);
+  currentProcess->JoinWait();
+ //printf("Joining Process %d to Parent Process %d 2\n", id, currentThread->pid);
+  currentProcess->ExitRelease();
+ // printf("Joining Process %d to Parent Process %d finish\n", id, currentThread->pid);
+  return 0;
+}
+
+int Ptable::ExitUpdate(int exitcode) {
+  if (currentThread->pid == 0) {
+   // printf("HALT NACHOS\n");
+    interrupt->Halt();
+    return exitcode;
+  }
+
+ // printf("Exit current process %d\n", currentThread->pid);
+  PCB *currentProcess = pcb[currentThread->pid];
+  PCB *parentProcess = pcb[currentProcess->parentID];
+  currentProcess->SetExitCode(exitcode);
+ // currentProcess->JoinRelease();
+  parentProcess->JoinRelease();
+ // printf("Exit current process %d 1\n", currentThread->pid);
+ // currentProcess->ExitWait();
+  parentProcess->ExitWait();
+ // printf("Exit current process %d 2\n", currentThread->pid);
+  bm->Clear(currentProcess->GetID());
+ // printf("Exit current process %d 3\n", currentThread->pid);
+  delete currentProcess;
+  //  printf("Exit current process %d 4\n", currentThread->pid);
+  currentProcess = NULL;
+  delete currentThread->space;
+  //printf("Exit current process %d 5\n", currentThread->pid);
+  currentThread->Finish();
+ // printf("Exit current process %d finish\n", currentThread->pid);
+  return exitcode;
+}
 

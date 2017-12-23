@@ -132,7 +132,7 @@ ExceptionHandler(ExceptionType which)
              int virtAddr;
              char* str;
              virtAddr = machine->ReadRegister(4);
-             str = machine->User2System(virtAddr,1000);
+             str = machine->User2System(virtAddr,50);
              if (str != NULL)
              {
                printf("%s", str);
@@ -470,9 +470,6 @@ ExceptionHandler(ExceptionType which)
              }  
              // Transfer data from userspace to kernelspace
              char* buffer = machine->User2System(virtAddr, charcount + 1);
-             //int len = 0;
-             //while (len < charcount && buffer[len]) len++;
-             //buffer[len] = '\0';
              if (id == ConsoleOutput) {
                int i = 0;
                // Print each character to console respectively
@@ -549,7 +546,7 @@ ExceptionHandler(ExceptionType which)
              break;
            }
             
-            // Syscall Exec
+            //Syscall Exec
            case SC_Exec:
            {
              int virtAddr;
@@ -561,10 +558,100 @@ ExceptionHandler(ExceptionType which)
                 break;
              }
              machine->WriteRegister(2,pTab->ExecUpdate(filename));
+             break;
+           }
+
+            //Syscall Join
+           case SC_Join:
+           {
+             int id = machine->ReadRegister(4);
+             machine->WriteRegister(2,pTab->JoinUpdate(id));
+             break;
+           }
+            //Syscall Exit
+           case SC_Exit:
+           {
+             int exitcode = machine->ReadRegister(4);
+             machine->WriteRegister(2,pTab->ExitUpdate(exitcode));
+             break;
+           }
+            
+            //Syscall CreateSemaphore
+           case SC_CreateSemaphore:
+           {
+             int virtAddr;
+             char* name;
+             int semVal;
+             virtAddr = machine->ReadRegister(4);
+             name = machine->User2System(virtAddr, MAX_STR_LENGTH);
+             semVal = machine->ReadRegister(5);
+             if (name == NULL) {
+                machine->WriteRegister(2, -1);
+                break;
+             }
+             int res = sTab->Create(name, semVal);
+             if (res == -1) {
+                printf("Create Semaphore error\n");
+             }
+             machine->WriteRegister(2,res);
+             break;
+           }
+
+            //Syscall Up
+           case SC_Signal:
+           {
+             int virtAddr;
+             char* name;
+             int semVal;
+             virtAddr = machine->ReadRegister(4);
+             name = machine->User2System(virtAddr, MAX_STR_LENGTH);
+             if (name == NULL) {
+                machine->WriteRegister(2, -1);
+                break;
+             }
+             int res = sTab->Signal(name);
+             if (res == -1) {
+                printf("Up Semaphore error\n");
+             }
+             machine->WriteRegister(2,res);
+             break;
+           }
+
+            //Syscall Down
+           case SC_Wait:
+           {
+             int virtAddr;
+             char* name;
+             int semVal;
+             virtAddr = machine->ReadRegister(4);
+             name = machine->User2System(virtAddr, MAX_STR_LENGTH);
+             if (name == NULL) {
+                machine->WriteRegister(2, -1);
+                break;
+             }
+             int res = sTab->Wait(name);
+             if (res == -1) {
+                printf("Down Semaphore error\n");
+             }
+             machine->WriteRegister(2,res);
+             break;
+           }
+
+            //Syscall Yeild
+           case SC_Yield:
+            {
+                currentThread->Yield();
+                break;
+            }
+
+           case SC_printInt:
+           {
+              printf("%d ", machine->ReadRegister(4));
+              break;
            }
 
            default:
-		   interrupt->Halt();
+		     interrupt->Halt();
          }
 
          // Update program counters

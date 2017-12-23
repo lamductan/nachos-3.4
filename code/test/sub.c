@@ -6,5 +6,7 @@ int main()
 {
   int result;
   result = Sub(43, 23);
+  print("Result = ");
+  printInt(result);
   Halt();
 }
