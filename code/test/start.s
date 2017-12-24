@@ -233,6 +233,30 @@ Wait:
 	syscall
 	j	$31
 	.end Wait
+
+	.globl Atoi
+	.ent	Atoi
+Atoi:
+	addiu $2,$0,SC_Atoi
+	syscall
+	j	$31
+	.end Atoi
+
+	.globl CatI2Str
+	.ent	CatI2Str
+CatI2Str:
+	addiu $2,$0,SC_CatI2Str
+	syscall
+	j	$31
+	.end CatI2Str
+
+	.globl CatStr2Str
+	.ent	CatStr2Str
+CatStr2Str:
+	addiu $2,$0,SC_CatStr2Str
+	syscall
+	j	$31
+	.end CatStr2Str
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

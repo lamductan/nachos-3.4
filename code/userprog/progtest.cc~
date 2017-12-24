@@ -45,11 +45,8 @@ StartProcess(char *filename)
 					// the address space exits
 					// by doing the syscall "exit"
     */
-printf("Start process\n");
-    pTab->ExecUpdate(filename);
-printf("Start process\n");
+    pTab->ExecUpdate(1, filename);
     machine->Run();
-    printf("Start process\n");
     ASSERT(FALSE);
 }
 

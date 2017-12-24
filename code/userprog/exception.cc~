@@ -24,6 +24,11 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include <cstring>
+#include <string>
+#include <sstream>
+#include <vector>
+#include "addrspace.h"
 
 //----------------------------------------------------------------------
 // ExceptionHandler
@@ -47,6 +52,12 @@
 //	"which" is the kind of exception.  The list of possible exceptions 
 //	are in machine.h.
 //----------------------------------------------------------------------
+
+void itoa(int n, char* buffer, int base);
+int Atoi(char* str);
+int tokenize(std::string str, char **&tokens);
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+std::vector<std::string> split(const std::string &s, char delim);
 
 void
 ExceptionHandler(ExceptionType which)
@@ -339,11 +350,10 @@ ExceptionHandler(ExceptionType which)
              else {
                OpenFile* of = fileSystem->Open(filename, openFileType);
                if (of != NULL) {
-                 int res = currentThread->space->insertFile(of);
+                 int res = pTab->insertFile(of);
                  if (res == -1)
                    printf("Not enough memory\n");
                  else printf("Open file successfully\n");
-                 printf("res = %d\n", res);
                  machine->WriteRegister(2,res);
                  break;
                }       
@@ -364,7 +374,7 @@ ExceptionHandler(ExceptionType which)
                machine->WriteRegister(2,-1);
                break;
              }
-             if (currentThread->space->removeFile(id)) {
+             if (pTab->removeFile(id)) {
                printf("Close file successfully\n");
              }
              else {
@@ -424,13 +434,13 @@ ExceptionHandler(ExceptionType which)
              // Read from file
              else {
                if (id < 0 || id >= FileEntries) {
-                  printf("Wrong id\n");
+                  printf("Wrong id %d to read\n", id);
                   machine->WriteRegister(2,-1);
                   break;
                } 
-               OpenFile* of = currentThread->space->returnFile(id);
+               OpenFile* of = pTab->returnFile(id);
                if (of == NULL) {
-                 printf("File id is not opened\n");
+                 printf("File %d is not opened to read\n", id);
                  machine->WriteRegister(2,-1);
                  break;
                }
@@ -491,18 +501,18 @@ ExceptionHandler(ExceptionType which)
              // Write to file
              else {
                if (id < 0 || id >= FileEntries) {
-                  printf("Wrong id\n");
+                  printf("Wrong id %d to write\n", id);
                   machine->WriteRegister(2,-1);
                   break;
                } 
-               OpenFile* of = currentThread->space->returnFile(id);
+               OpenFile* of = pTab->returnFile(id);
                if (of == NULL) {
-                 printf("File id is not opened\n");
+                 printf("File %d is not opened to write\n", id);
                  machine->WriteRegister(2,-1);
                  break;
                }
                if (of->isReadOnly()) {
-                 printf("Cannot write to this file. File is read-only.\n");
+                 printf("Cannot write to this file %d. File is read-only.\n", id);
                  machine->WriteRegister(2,-1);
                  break;                                   
                }
@@ -526,13 +536,13 @@ ExceptionHandler(ExceptionType which)
                break;
              }
              if (id < 0 || id >= FileEntries) {
-               printf("File id is not valid\n");
+               printf("File %d is not valid\n", id);
                machine->WriteRegister(2,-1);
                break;
              } 
-             OpenFile* of = currentThread->space->returnFile(id);
+             OpenFile* of = pTab->returnFile(id);
              if (of == NULL) {
-               printf("File id is not opened");
+               printf("File %d is not opened\n", id);
                machine->WriteRegister(2,-1);
                break;
              }
@@ -551,14 +561,18 @@ ExceptionHandler(ExceptionType which)
            case SC_Exec:
            {
              int virtAddr;
-             char* filename;
+             char* arg_cstr;
+             char **argv;
+             int argc;
              virtAddr = machine->ReadRegister(4);
-             filename = machine->User2System(virtAddr, MaxFileLength + 1);
-             if (filename == NULL) {
+             arg_cstr = machine->User2System(virtAddr, MaxFileLength + 1);
+             if (arg_cstr == NULL) {
                 machine->WriteRegister(2,-1);
                 break;
              }
-             machine->WriteRegister(2,pTab->ExecUpdate(filename));
+             std::string arg(arg_cstr);
+             argc = tokenize(arg, argv);
+             machine->WriteRegister(2,pTab->ExecUpdate(argc, argv));
              break;
            }
 
@@ -632,7 +646,7 @@ ExceptionHandler(ExceptionType which)
              }
              int res = sTab->Wait(name);
              if (res == -1) {
-                printf("Down Semaphore error\n");
+                printf("Down Semaphore %s error\n", name);
              }
              machine->WriteRegister(2,res);
              break;
@@ -650,6 +664,51 @@ ExceptionHandler(ExceptionType which)
               printf("%d ", machine->ReadRegister(4));
               break;
            }
+    
+           case SC_Atoi:
+           {
+              int virtAddr;
+              char* str;
+              virtAddr = machine->ReadRegister(4);
+              str = machine->User2System(virtAddr, MAX_STR_LENGTH + 1);
+              machine->WriteRegister(2,Atoi(str));
+              break;
+           }
+
+           case SC_CatI2Str:
+           {
+              int virtAddr, n;
+              char* str;
+              char str1[10];
+              virtAddr = machine->ReadRegister(4);
+              str = machine->User2System(virtAddr, MAX_STR_LENGTH + 1);
+              n = machine->ReadRegister(5);
+              itoa(n, str1, 10);
+              strcat(str, " ");
+              strcat(str, str1);
+              machine->System2User(virtAddr, strlen(str) + 1, str);
+              machine->WriteRegister(2,0);
+              break;
+           }
+
+          case SC_CatStr2Str:
+          {
+              int virtAddr1, virtAddr2;
+              char *dest, *source;
+              virtAddr1 = machine->ReadRegister(4);
+              virtAddr2 = machine->ReadRegister(5);
+              dest = machine->User2System(virtAddr1, MAX_STR_LENGTH + 1);
+            //  source = machine->User2System(virtAddr2, MAX_STR_LENGTH + 1);
+              source = "123";
+              strcat(dest, " ");
+              strcat(dest, source);
+              printf("dest = %s\n", dest);
+              printf("lendest = %d\n", strlen(dest));
+              dest[strlen(dest)] = '\0';
+              machine->System2User(virtAddr1, strlen(dest) + 1, dest);
+              printf("dest = %s\n", dest);
+              machine->WriteRegister(2,0);
+          }
 
            default:
 		     interrupt->Halt();
@@ -661,4 +720,52 @@ ExceptionHandler(ExceptionType which)
          machine->registers[NextPCReg] += 4;
          break;	
     }
+}
+
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while(std::getline(ss, item, delim)) {
+      if (!item.empty() && item[0] != '\0')
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    return split(s, delim, elems);
+}
+
+// std::vector<std::string> tokenize(std::string str){
+//   return split(str, ' ');
+// }
+
+int tokenize(std::string str, char **& tokens){
+  std::vector<std::string> tks = split(str, ' ');
+  tokens = new char*[tks.size()];
+  for (int i = 0; i < tks.size(); i++){
+    tokens[i] = new char[tks[i].size()+1];
+    strcpy(tokens[i], tks[i].c_str());
+  }
+  return tks.size();
+}
+
+void itoa(int n, char* buffer, int base) {
+  std::string s = "";
+  std::string t = "";
+  do {
+    s += '0' + n % base;
+    n /= base;
+  } while (n > 0);
+  for(int i = s.length() - 1; i >= 0; i--)
+    t += s[i];
+  strcpy(buffer, t.c_str()); 
+}
+
+int Atoi(char* buffer) {
+  int res = 0;
+  while(*buffer != '\0')
+    res = res*10 + *buffer++ - '0';
+  return res;
 }

@@ -1,28 +1,58 @@
 #include "syscall.h"
+#define TMP "tmp"
+
+int openTmp(char* tmp) { 
+  int fidTmp = Open(TMP, 0);
+  if (fidTmp == -1) {
+    if (CreateFile(TMP) == 0) 
+      fidTmp = Open(TMP,0);
+    fidTmp = -1;
+  }
+  return fidTmp;
+}
+
+int strLen(char* buffer) {
+  int len = 0;
+  while (*buffer++ != '\0') len++;
+  return len;
+}
 
 int main(int argc, char** argv) {  
-  int fidSinhVien, i, v;
+  int fidSinhVien, fidTmp, i, n;
   char c;
+  fidSinhVien = Atoi(argv[1]);
+  n = Atoi(argv[2]);
+  fidTmp = -1;
+  
+  for(i = 0; i < n; i++) {
+    do {
+      Wait("sinhvien");
+      Wait("mutex");
+      Read(&c, 1, fidSinhVien);
+      if (fidTmp == -1) fidTmp = openTmp(TMP);
+      Write(&c,1,fidTmp);
+      if (c < '0' || c > '9') {
+        if (fidTmp != -1) {
+          Close(fidTmp);
+          fidTmp = -1;
+        }
+        Signal("mutex");
+        Signal("voinuoc");
+      }
+      else {
+        Signal("mutex");
+        Signal("sinhvien");
+      }
+    } while (c != '\n');
+  }
   Wait("sinhvien");
   Wait("mutex");
-  fidSinhVien = 0;
-  i = 0;
-  while (argv[0][i] >= '0' && argv[0][i] <= '9') fidSinhVien = fidSinhVien*10 + argv[0][i] - '0';
-  PrintString("FIDSV ");
-  printInt(fidSinhVien);
- 
-  v = 0;
-  do {
-    Read(c, 1, fidSinhVien);
-    if (c >= '0' && c <= '9') v = 10*v + c - '0';
-    else {
-      printInt(v);
-      print("\n");
-      v = 0;
-    }
-  } while (c != '\n');
-
+  if (fidTmp == -1) fidTmp = openTmp(TMP);
+  Write("q",1,fidTmp);
+  Close(fidTmp);
   Signal("mutex");
-  //Signal("voinuoc");
+  Signal("voinuoc");
+
+  print("Process finished. See result in file output.txt.\n");
   Exit(0);
 }

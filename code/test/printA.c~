@@ -6,7 +6,6 @@ int main() {
     Wait("PrintA");
     Wait("mutex");
     print("a");
-    //Signal("PrintA");
     Signal("mutex");
     Signal("PrintC");
   }

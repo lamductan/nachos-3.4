@@ -6,21 +6,30 @@ Ptable::Ptable() {
   bmsem = new Semaphore("bmsem", 1);
   for(int i = 0; i < MAX_PROCESS; i++)
     pcb[i] = NULL;
+  fileEntry = new OpenFile*[FileEntries];
+  fileSystem->Create("stdin",0);
+  fileSystem->Create("stdout",0);
+  fileEntry[0] = fileSystem->Open("stdin");
+  fileEntry[1] = fileSystem->Open("stdout");
+  for(int i = 2; i < FileEntries; i++)
+    fileEntry[i] = NULL;  
 }
 
 Ptable::~Ptable() {
   delete bm;
   delete bmsem;
   for(int i = 0; i < MAX_PROCESS; i++)
-    if (pcb[i] != NULL) delete pcb[i];
+    if (pcb[i]) delete pcb[i];
+  for(int i = 0; i < FileEntries; i++)
+    if (fileEntry[i]) delete fileEntry[i];
 }
 
-int Ptable::ExecUpdate(char* name) {
+int Ptable::ExecUpdate(int argc, char** argv) {
   bmsem->P();
-  if (name == NULL) return -1;
-  OpenFile* of = fileSystem->Open(name, 0);
+  if (argv[0] == NULL) return -1;
+  OpenFile* of = fileSystem->Open(argv[0], 0);
   if (of == NULL) return -1;
-  if (strcmp(currentThread->name, name) == 0) return -1;
+  if (strcmp(currentThread->name, argv[0]) == 0) return -1;
   int freeSlotID;
   int ParentID = -1;
   
@@ -29,7 +38,7 @@ int Ptable::ExecUpdate(char* name) {
     bm->Mark(freeSlotID);
   }
   else {
-    if (strcmp(currentThread->name, name) == 0) {
+    if (strcmp(currentThread->name, argv[0]) == 0) {
       bmsem->V();
       return -1;
     }
@@ -48,7 +57,7 @@ int Ptable::ExecUpdate(char* name) {
   int ProcessID = freeSlotID;
   pcb[ProcessID] = new PCB(ProcessID);
   pcb[ProcessID]->parentID = ParentID;
-  int ret = pcb[ProcessID]->Exec(name, ProcessID);
+  int ret = pcb[ProcessID]->Exec(argc, argv, ProcessID);
   if (ret == -1) {
     bm->Clear(ProcessID);
     delete pcb[ProcessID];
@@ -94,3 +103,37 @@ int Ptable::ExitUpdate(int exitcode) {
   return exitcode;
 }
 
+// Insert an opened file to File Entry
+int
+Ptable::insertFile(OpenFile * of) {
+  int i = 2;
+  while (i < FileEntries) {
+    if (fileEntry[i] == NULL) {
+      fileEntry[i] = of;
+      return i; 
+    }
+    i++;
+  }
+  return -1;
+}
+
+// Return OpenFile object
+OpenFile* 
+Ptable::returnFile(int fd) {
+  if (fd < 0 || fd >= FileEntries)
+    return NULL;
+
+  return fileEntry[fd];
+}
+
+// Remove an opened file out File Entry
+bool 
+Ptable::removeFile(int fd) {
+  OpenFile* f = fileEntry[fd];
+  if (f) {
+    delete f;
+    fileEntry[fd] = NULL;
+    return true;
+  }
+  return false;
+}

@@ -260,7 +260,8 @@ Input: - User space address (int)
 Output:- Buffer (char*)
 Purpose: Copy buffer from User memory space to System memory space
 */
-Machine::char* User2System(int virtAddr,int limit)
+char*
+Machine::User2System(int virtAddr,int limit)
 {
   int i;// index
   int oneChar;
@@ -290,7 +291,8 @@ Input: - User space address (int)
 Output:- Number of bytes copied (int)
 Purpose: Copy buffer from System memory space to User memory space
 */
-Machine::int System2User(int virtAddr,int len,char* buffer)
+int
+Machine::System2User(int virtAddr,int len,char* buffer)
 {
 
   if (len < 0) return -1;

@@ -45,7 +45,7 @@ StartProcess(char *filename)
 					// the address space exits
 					// by doing the syscall "exit"
     */
-    pTab->ExecUpdate(filename);
+    pTab->ExecUpdate(1, &filename);
     machine->Run();
     ASSERT(FALSE);
 }

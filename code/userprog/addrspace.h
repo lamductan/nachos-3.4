@@ -29,7 +29,8 @@ class AddrSpace {
 					// initializing it with the program
 					// stored in the file "executable"
     //AddrSpace() {}    
-    AddrSpace(char* filename);    
+    AddrSpace(char* filename);
+    AddrSpace(char* filename, int argc = 0, char** argv = NULL, int *userSpacAargv = NULL);    
     ~AddrSpace();			// De-allocate an address space
 
     void InitRegisters();		// Initialize user-level CPU registers,
@@ -38,16 +39,13 @@ class AddrSpace {
     void SaveState();			// Save/restore address space-specific
     void RestoreState();		// info on a context switch 
 
-    int insertFile(OpenFile * of);      //returns file descriptor
-    OpenFile * returnFile(int fd);      //checks if given file descriptor exists
-    bool removeFile(int fd) ;           //removes given file descriptor;
+    void copyArguments(int argc, char** argv, int initialArgAddress);
 
   private:
     TranslationEntry *pageTable;	// Assume linear page table translation
 					// for now!
     unsigned int numPages;		// Number of pages in the virtual 
 					// address space
-    OpenFile** fileEntry;
 };
 
 #endif // ADDRSPACE_H

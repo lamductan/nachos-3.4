@@ -212,5 +212,6 @@ extern void ExceptionHandler(ExceptionType which);
 unsigned int WordToHost(unsigned int word);
 unsigned short ShortToHost(unsigned short shortword);
 unsigned int WordToMachine(unsigned int word);
+unsigned short ShortToMachine(unsigned short shortword);
 
 #endif // MACHINE_H

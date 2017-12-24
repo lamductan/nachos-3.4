@@ -1,7 +1,9 @@
 #include "syscall.h"
 
 int main() {
+/*
   int a, c;
+  CreateSemaphore("mutex", 1);
   CreateSemaphore("PrintA", 1);
   CreateSemaphore("PrintC", 0);
   a = Exec("./test/printA");
@@ -10,5 +12,9 @@ int main() {
   Join(a);
   Join(c);
   print("\n");
+*/
+  int b;
+  b = Exec("./test/printB LamDucTan love TangYPhung");
+  Join(b);
   Exit(0);
 }

@@ -30,7 +30,7 @@ class PCB {
     PCB(int id);            // constructor
     ~PCB();                 // destructor
     // nạp chương trình có tên lưu trong biến filename và processID là pid
-    int Exec(char *filename, int ProcessID);  // Tạo 1 thread mới có tên là filename và process là pid
+    int Exec(int argc, char **argv, int ProcessID);  // Tạo 1 thread mới có tên là filename và process là pid
     int GetID(); // Trả về ProcessID của tiến trình gọi thực hiện
     int GetNumWait(); // Trả về số lượng tiến trình chờ
     void IncNumWait(); // Tăng số tiến trình chờ

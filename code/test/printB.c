@@ -1,9 +1,25 @@
 #include "syscall.h"
 
-int main() {
-  int i;
-  print("lamductan");
-  for(i = 0; i < 5; ++i)
-    print("b");
+int strLen(char* buffer) {
+  int len = 0;
+  while (*buffer++ != '\0') len++;
+  return len;
+}
+
+int main(int argc, char** argv) {
+  int i, n, len;
+  char c;
+  //for(i = 0; i < argc; ++i) {
+    //Write(argv[i], MAX_STR_LENGTH, 1);
+    //Write("\n", 1, 1);
+  //}
+  n = Open("test1", 0);
+  for(i = 0; i < 10; i++) {
+    PrintChar(i+'0');
+    Write(i + '0',1,n); 
+    Read(&c,1,n);
+    PrintChar(c);
+    print("\n");
+  }
   return 0;
 }
