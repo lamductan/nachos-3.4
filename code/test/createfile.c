@@ -5,20 +5,18 @@
 int main() 
 {
   char filename[MAX_STR_LENGTH];
-  //PrintString("Enter name of the file which be created: ");
-  //ReadString(filename, MAX_STR_LENGTH);
-  if (CreateFile("2493859") == 0)
+  PrintString("Enter name of the file which be created: ");
+  ReadString(filename, MAX_STR_LENGTH);
+  Write("Create file ", 13, ConsoleOutput);
+  if (CreateFile(filename) == 0)
   {
-    print("Create file ");
-    print(filename);
-    //PrintInt(23);
-    print(" success.\n");
+    PrintString(filename);
+    Write(" success.\n", 10, ConsoleOutput);
   }
   else
   {
-    print("Create file ");
-    print(filename);
-    print(" failed.\n");
+    PrintString(filename);
+    Write(" failed.\n", 10, ConsoleOutput);
   }
   
   return 0;

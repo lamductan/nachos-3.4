@@ -1,14 +1,30 @@
 #include "syscall.h"
 
+void dec(int *x) {
+  *x -= 5;
+}
+
+void write(int x) {
+    Write("x = ", 4, ConsoleOutput);
+    printInt(x);
+    Write("\n", 1, ConsoleOutput);
+}
+
 int main() {
-  int a, i;
-  for(i = 0; i < 100; i++) {
+  int i, x;
+  for(i = 0; i < 20; i++) {
     Wait("PrintC");
-    Wait("mutex");
-    print("c");
-    Signal("mutex");
+    Write("c", 1, ConsoleOutput);
     Signal("PrintA");
   }
+
+//  for(i = 0; i < 10; i++) {
+//    Wait("mutex");
+//    Write("Process B\n", 10, ConsoleOutput); 
+//    dec(&x);
+//    write(x);
+//    Signal("mutex");
+//  }
   return 0;
 }
 

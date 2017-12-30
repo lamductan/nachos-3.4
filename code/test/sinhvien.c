@@ -11,12 +11,6 @@ int openTmp(char* tmp) {
   return fidTmp;
 }
 
-int strLen(char* buffer) {
-  int len = 0;
-  while (*buffer++ != '\0') len++;
-  return len;
-}
-
 int main(int argc, char** argv) {  
   int fidSinhVien, fidTmp, i, n;
   char c;
@@ -27,32 +21,28 @@ int main(int argc, char** argv) {
   for(i = 0; i < n; i++) {
     do {
       Wait("sinhvien");
-      Wait("mutex");
       Read(&c, 1, fidSinhVien);
       if (fidTmp == -1) fidTmp = openTmp(TMP);
+      if (fidTmp == -1) Exit(-2);
+
       Write(&c,1,fidTmp);
       if (c < '0' || c > '9') {
-        if (fidTmp != -1) {
-          Close(fidTmp);
-          fidTmp = -1;
-        }
-        Signal("mutex");
+        Close(fidTmp);
+        fidTmp = -1;
         Signal("voinuoc");
       }
       else {
-        Signal("mutex");
         Signal("sinhvien");
       }
     } while (c != '\n');
   }
+
   Wait("sinhvien");
-  Wait("mutex");
   if (fidTmp == -1) fidTmp = openTmp(TMP);
   Write("q",1,fidTmp);
   Close(fidTmp);
-  Signal("mutex");
   Signal("voinuoc");
 
-  print("Process finished. See result in file output.txt.\n");
+  PrintString("Process finished. See result in file output.txt.\n");
   Exit(0);
 }

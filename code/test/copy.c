@@ -2,7 +2,7 @@
 #include "syscall.h"
 
 int main() {
-  int len, idIn, idOut;
+  int len, idIn, idOut, loop;
   char buffer[MAX_STR_LENGTH];
   PrintString("Enter name of the file which be copy (source file): ");
   ReadString(buffer, MAX_STR_LENGTH);
@@ -24,12 +24,15 @@ int main() {
   
   len = Seek(-1,idIn);
   Seek(0,idIn);
-  Read(buffer, len, idIn);
-  Write(buffer, len, idOut);
+  loop = len/(MAX_STR_LENGTH - 1) + len % (MAX_STR_LENGTH - 1) > 0;
+  while (loop--) {
+    Read(buffer, MAX_STR_LENGTH - 1, idIn);
+    Write(buffer, MAX_STR_LENGTH - 1, idOut);
+    PrintString(buffer);
+    PrintString("\n");
+  }
 
-  PrintString("Copy file done");
-  PrintString("\n");
-  
+  PrintString("Copy file done.\n");  
   if (idIn >= 0) Close(idIn);
   if (idOut >= 0) Close(idOut);
 

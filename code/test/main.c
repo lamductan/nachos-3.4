@@ -2,11 +2,10 @@
 #define OUTPUT "output.txt"
 
 int main(int argc, char** argv) {
-  int svProg, vnProg, fidSinhVien, fidOutput, n;
+  int svProg, vnProg, fidSinhVien, n;
   char c = 'a';
   char* cmdSV = "./test/sinhvien", *cmdVN;
  
-  CreateSemaphore("mutex", 1);
   CreateSemaphore("sinhvien", 1);
   CreateSemaphore("voinuoc", 0);
   
@@ -25,16 +24,8 @@ int main(int argc, char** argv) {
 
   CatI2Str(cmdSV, fidSinhVien);
   CatI2Str(cmdSV, n);
-
-  fidOutput = Open(OUTPUT, 0);
-  if (fidOutput == -1) {
-    if (CreateFile(OUTPUT) == 0) 
-      fidSinhVien = Open(OUTPUT,0);
-    else Exit(2);
-  }
  
   cmdVN = "./test/voinuoc";
-  CatI2Str(cmdVN, fidOutput);
  
   vnProg = Exec(cmdVN);
   svProg = Exec(cmdSV);

@@ -10,5 +10,5 @@ int main() {
   print("This program has 2 main function:\n");
   print("  1. Print ASCII table\n");
   print("  2. Sort an array with has n elements from the user’s input ( n at most equals to 100). This function uses Bubble Sort algorithm to sort this array.\n");
-  return 0;
+  Exit(0);
 }
